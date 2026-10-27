@@ -1,0 +1,18 @@
+{
+  "name": "aspen-net-skills",
+  "owner": {
+    "name": "quantum-aspen",
+    "url": "https://github.com/quantum-aspen"
+  },
+  "metadata": {
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "meetings",
+      "source": "meetings",
+      "description": "Transcribe ASPEN-NET Zoom recordings locally and publish summaries to the wiki.",
+      "version": "0.1.0"
+    }
+  ]
+}

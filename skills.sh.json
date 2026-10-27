@@ -1,0 +1,10 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "groupings": [
+    {
+      "title": "Meetings",
+      "description": "Transcribe ASPEN-NET Zoom recordings locally and publish summaries to the wiki.",
+      "skills": ["local-meeting-transcript"]
+    }
+  ]
+}

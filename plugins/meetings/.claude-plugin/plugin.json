@@ -1,0 +1,17 @@
+{
+  "name": "meetings",
+  "version": "0.1.0",
+  "description": "Transcribe Zoom meeting recordings on-device with faster-whisper, and write ASPEN-NET meeting summaries to the Outline wiki.",
+  "author": {
+    "name": "quantum-aspen",
+    "url": "https://github.com/quantum-aspen"
+  },
+  "repository": "https://github.com/quantum-aspen/aspen-net-skills",
+  "keywords": [
+    "aspen-net",
+    "meetings",
+    "transcription",
+    "zoom",
+    "outline"
+  ]
+}
