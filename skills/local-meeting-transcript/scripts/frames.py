@@ -21,8 +21,8 @@
       gets a fallback frame, since slow scrolling never trips the detector.
       Writes <out_dir>/scenes.json: [{t, at, reason, frame}].
 
-<video> is the screen-share-only stream if Zoom recorded one (yt-dlp format
-`view_with_share`), else the normal `view` recording. Times are seconds into
+<video> is the screen-share-only stream if Zoom recorded one (share.mp4,
+yt-dlp format `share`), else meeting.mp4. Times are seconds into
 the recording, matching chat.py's `t`. Needs ffmpeg on PATH; stdlib only.
 """
 import argparse

@@ -58,8 +58,11 @@ def main():
     play_url = url
     share = re.search(r"/rec/share/([^/?#]+)", url)
     if share:
-        get(opener, url)  # share page sets the initial cookies
-        info = get_json(opener, f"{origin}/nws/recording/1.0/play/share-info/{share.group(1)}", url)
+        _, page = get(opener, url)  # share page sets the initial cookies
+        # yt-dlp keys share-info on the page's meetingId; the URL's share id also works
+        mid = re.search(r"meetingId:\s*'([^']+)'", page)
+        share_id = mid.group(1) if mid else share.group(1)
+        info = get_json(opener, f"{origin}/nws/recording/1.0/play/share-info/{share_id}", url)
         play_url = urllib.parse.urljoin(origin, info["redirectUrl"])
 
     final_url, html = get(opener, play_url, referer=url)
@@ -67,9 +70,11 @@ def main():
     if not fid:
         sys.exit(f"no fileId found on play page {final_url}")
 
+    # Same query as yt-dlp. With canPlayFromShare=true instead, Zoom leaves
+    # out viewMp4WithshareUrl, so the stream keys no longer match yt-dlp's formats.
     result = get_json(
         opener,
-        f"{origin}/nws/recording/1.0/play/info/{fid.group(1)}?canPlayFromShare=true&componentName=rec-play",
+        f"{origin}/nws/recording/1.0/play/info/{fid.group(1)}?continueMode=true",
         final_url,
     )
     result["_playUrl"] = final_url
@@ -82,7 +87,9 @@ def main():
         "duration": result.get("duration"),
         "hasTranscript": result.get("hasTranscript"),
         "chatMessages": len(result.get("xmppList") or []),
-        "hasShareOnlyStream": bool(result.get("viewMp4WithshareUrl")),
+        # yt-dlp formats: viewMp4Url -> view (camera), shareMp4Url -> share
+        # (screen share only), viewMp4WithshareUrl -> view_with_share (both)
+        "streams": [k for k in ("viewMp4Url", "shareMp4Url", "viewMp4WithshareUrl") if result.get(k)],
         "shareRanges": (result.get("vttRanges") or {}).get("share"),
     }, indent=1))
 

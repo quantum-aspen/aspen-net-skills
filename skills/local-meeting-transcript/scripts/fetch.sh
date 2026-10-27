@@ -53,12 +53,13 @@ echo "=== downloading recording ==="
 timeout 900 yt-dlp -o "meeting.mp4" --no-warnings --no-progress "$URL"
 ls -la meeting.mp4
 
-# Frames for screenshots come from the screen-share-only stream if there is
-# one; otherwise frames.py uses meeting.mp4, which then shows the share
-# alongside the speaker's camera.
-if [ -f play_info.json ] && jq -e '.viewMp4WithshareUrl' play_info.json >/dev/null; then
+# Frames for screenshots come from the screen-share-only stream if the host
+# recorded one (play info shareMp4Url, yt-dlp format `share`). Otherwise
+# frames.py uses meeting.mp4: yt-dlp's default `view_with_share` (share plus
+# camera) when it exists, else `view` (camera).
+if [ -f play_info.json ] && jq -e '.shareMp4Url' play_info.json >/dev/null; then
   echo "=== downloading screen-share-only stream ==="
-  timeout 900 yt-dlp -f view_with_share -o "share.mp4" --no-warnings --no-progress "$URL"
+  timeout 900 yt-dlp -f share -o "share.mp4" --no-warnings --no-progress "$URL"
 fi
 
 echo "=== extracting 16kHz mono WAV for Whisper ==="
