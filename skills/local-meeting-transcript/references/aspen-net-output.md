@@ -112,7 +112,7 @@ Otherwise don't attribute. Write "it was raised that…" or "one view was…", a
 
 **Chat:** add a `### Chat` section near the end listing the meeting's chat messages from `chat.json`, with time and sender. Sender names come from Zoom, so these are attributed. Leave out `ai:` commands that were carried out (they show up as screenshots or notes instead), and any messages inside an off-record span. Mention any command you couldn't interpret.
 
-**Screenshots:** upload each kept frame with `create_attachment` and place it inline at the topic it belongs to, captioned per `chat-commands.md`. Requested screenshots always go in. Scene frames go in only where they show something the summary discusses.
+**Screenshots:** upload each kept frame and place it inline at the topic it belongs to, captioned per `chat-commands.md`. Requested screenshots always go in. Scene frames go in only where they show something the summary discusses. Uploading is two steps: `create_attachment` (name, `image/png`, size in bytes) returns an `uploadUrl`, its form fields and the attachment URL. Then POST the file there, e.g. `curl -sf -X POST "$uploadUrl" -F key=value … -F file=@frame.png` with every returned field before `file`. Embed the attachment URL as `![caption](url)`.
 
 Style: numbered `###` topics, short unattributed quotes in italics, explicit **Ask:** lines, and owners on action items. Link related wiki docs (e.g. the [Glossary](https://wiki.quantum-aspen.net/doc/glossary-LbZyBPLZu5)) where a topic touches them. Read earlier summaries in the series first so cross-references are real. Don't link to local transcript paths, because nobody else can open them.
 
