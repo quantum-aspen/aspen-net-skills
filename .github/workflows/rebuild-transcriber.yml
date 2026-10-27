@@ -1,0 +1,24 @@
+# The transcriber image bakes these skills in at build time, so a change on
+# main needs a new image. This asks aspen-net-transcriber to rebuild.
+#
+# Needs secret TRANSCRIBER_DISPATCH_TOKEN: a fine-grained token on the
+# quantum-aspen org with Contents: read and write on aspen-net-transcriber
+# (what repository_dispatch requires).
+name: rebuild-transcriber
+
+on:
+  push:
+    branches: [main]
+    paths: [skills/**]
+  workflow_dispatch:
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          gh api repos/quantum-aspen/aspen-net-transcriber/dispatches \
+            -f event_type=skills-updated \
+            -f "client_payload[ref]=$GITHUB_SHA"
+        env:
+          GH_TOKEN: ${{ secrets.TRANSCRIBER_DISPATCH_TOKEN }}
