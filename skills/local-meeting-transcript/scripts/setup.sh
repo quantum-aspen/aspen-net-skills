@@ -4,11 +4,12 @@
 # the diarization models. Safe to re-run — skips anything already present.
 #
 # Usage: setup.sh [workdir]
-#   workdir defaults to $MEETING_TOOLS_DIR, else .meeting-tools/ in the project
-#   root (the directory holding .claude/skills/local-meeting-transcript/)
+#   workdir defaults to $MEETING_TOOLS_DIR, else .meeting-tools/ in the
+#   current directory (run it from the project root). The skill itself may be
+#   installed anywhere (a plugin cache, a container image), so its own
+#   location says nothing about the project.
 set -e
-PROJECT=$(cd "$(dirname "$0")/../../../.." && pwd)
-D="${1:-${MEETING_TOOLS_DIR:-$PROJECT/.meeting-tools}}"
+D="${1:-${MEETING_TOOLS_DIR:-$PWD/.meeting-tools}}"
 mkdir -p "$D/models"
 cd "$D"
 
