@@ -1,0 +1,91 @@
+#!/usr/bin/env python3
+"""Fetch Zoom's player-info JSON for a cloud-recording share link.
+
+Usage: zoom_play_info.py <share-or-play-url> <workdir>
+
+Writes <workdir>/play_info.json: the `result` object of
+/nws/recording/1.0/play/info/<fileId>. It holds the in-meeting chat
+(`xmppList`), the recording start (`fileStartTime`, epoch ms) and the
+screen-share on/off ranges (`vttRanges.share`). Download the video itself
+with yt-dlp, which does this same dance; the stream URLs here return 403
+to a plain request.
+
+Share links no longer redirect to /rec/play/. The play page URL comes from
+/nws/recording/1.0/play/share-info/<shareId> (`redirectUrl`); loading that
+page sets the session cookies play/info needs. Stdlib only, so it runs with
+any python3.
+"""
+import http.cookiejar
+import json
+import re
+import sys
+import urllib.parse
+import urllib.request
+from pathlib import Path
+
+UA = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+      "(KHTML, like Gecko) Chrome/140.0 Safari/537.36")
+
+
+def get(opener, url, referer=None, accept=None):
+    req = urllib.request.Request(url, headers={"User-Agent": UA})
+    if referer:
+        req.add_header("Referer", referer)
+    if accept:
+        req.add_header("Accept", accept)
+    with opener.open(req, timeout=60) as r:
+        return r.geturl(), r.read().decode("utf-8", "replace")
+
+
+def get_json(opener, url, referer):
+    _, body = get(opener, url, referer, "application/json")
+    data = json.loads(body)
+    if not data.get("status"):
+        sys.exit(f"Zoom API error from {url}: {data.get('errorCode')} {data.get('errorMessage')}")
+    return data["result"]
+
+
+def main():
+    if len(sys.argv) != 3:
+        sys.exit(__doc__)
+    url, workdir = sys.argv[1], Path(sys.argv[2])
+    workdir.mkdir(parents=True, exist_ok=True)
+
+    jar = http.cookiejar.CookieJar()
+    opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
+    origin = "{0.scheme}://{0.netloc}".format(urllib.parse.urlsplit(url))
+
+    play_url = url
+    share = re.search(r"/rec/share/([^/?#]+)", url)
+    if share:
+        get(opener, url)  # share page sets the initial cookies
+        info = get_json(opener, f"{origin}/nws/recording/1.0/play/share-info/{share.group(1)}", url)
+        play_url = urllib.parse.urljoin(origin, info["redirectUrl"])
+
+    final_url, html = get(opener, play_url, referer=url)
+    fid = re.search(r"fileId:\s*'([^']+)'", html) or re.search(r"/rec/play/([^/?#]+)", final_url)
+    if not fid:
+        sys.exit(f"no fileId found on play page {final_url}")
+
+    result = get_json(
+        opener,
+        f"{origin}/nws/recording/1.0/play/info/{fid.group(1)}?canPlayFromShare=true&componentName=rec-play",
+        final_url,
+    )
+    result["_playUrl"] = final_url
+    (workdir / "play_info.json").write_text(json.dumps(result, indent=1))
+
+    print(json.dumps({
+        "fileId": fid.group(1),
+        "topic": (result.get("meet") or {}).get("topic"),
+        "fileStartTime": result.get("fileStartTime"),
+        "duration": result.get("duration"),
+        "hasTranscript": result.get("hasTranscript"),
+        "chatMessages": len(result.get("xmppList") or []),
+        "hasShareOnlyStream": bool(result.get("viewMp4WithshareUrl")),
+        "shareRanges": (result.get("vttRanges") or {}).get("share"),
+    }, indent=1))
+
+
+if __name__ == "__main__":
+    main()

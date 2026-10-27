@@ -20,22 +20,13 @@ Zoom has two unrelated caption-ish artifacts on a cloud recording:
 ## Definitive check (no video download needed)
 
 ```sh
-UA='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Safari/537.36'
-SHARE="<the /rec/share/... URL, or the original share link the user gave you>"
-PLAY="<the /rec/play/... URL — follow the share link's redirect, or use it directly if given>"
-
-# Establish a session (Zoom sets required cookies on the share page)
-curl -s -L -c cj.txt -b cj.txt -A "$UA" -o share.html "$SHARE"
-curl -s -L -c cj.txt -b cj.txt -A "$UA" -e "$SHARE" -o play.html "$PLAY"
-
-# Extract fileId from window.__data__ in play.html (it's near-JSON, single-quoted in places)
-FID=$(grep -oE "fileId: '[^']+'" play.html | sed -E "s/fileId: '(.+)'/\1/")
-
-# Call the real player-info API Zoom's JS frontend uses
-curl -s -b cj.txt -A "$UA" -e "$PLAY" -H 'Accept: application/json' \
-  "https://<zoom-subdomain>/nws/recording/1.0/play/info/$FID?canPlayFromShare=true&componentName=rec-play" \
-  | jq '.result | {hasTranscript, transcribing, showCcDropDown, useCustomCaption, enableZrSpeakNameTag}'
+python3 <skill>/scripts/zoom_play_info.py "<share or play URL>" <scratch>
+jq '{hasTranscript, transcribing, showCcDropDown, useCustomCaption, enableZrSpeakNameTag}' <scratch>/play_info.json
 ```
+
+`fetch.sh` already runs this for Zoom links, so `play_info.json` is usually in `<scratch>` by now.
+
+The script calls the player-info API Zoom's own web player uses. Share links (`/rec/share/<id>`) no longer redirect to the play page: it loads the share page for cookies, calls `/nws/recording/1.0/play/share-info/<id>` to get `redirectUrl`, loads that play page, takes `fileId` from it, then calls `/nws/recording/1.0/play/info/<fileId>?canPlayFromShare=true&componentName=rec-play`. The same response holds the chat (`xmppList`), the recording start (`fileStartTime`) and the screen-share ranges (`vttRanges.share`).
 
 `hasTranscript: true` means a real speaker-labeled Audio Transcript VTT exists and is worth fetching directly (skip local ASR/diarization entirely — Zoom's own labels will be better than anything sherpa-onnx produces). `hasTranscript: false` means there is none for this recording — the `chapter`-only result from yt-dlp is accurate, and the skill's normal local-whisper pipeline is the only option (diarization on top of it remains unreliable per `diarization-reliability.md`).
 

@@ -29,10 +29,12 @@ If a transcript exists but no wiki summary does, ask the user whether to write t
   transcript.md      # clean_transcript.py output plus the header below
   transcript.srt     # raw whisper output
   transcript.txt     # raw, one timestamped line per segment
+  chat.json          # chat.py output (Zoom links): timed messages, ai: commands
+  frames/            # only the screenshots used in the summary
   meta.json          # {url, recording_datetime, zoom_title, duration_s, attendees, wiki_url}
 ```
 
-Use the recording date, not today's. Name the meeting from its content and match the existing series (e.g. "Software stack meeting", "Attosecond layer deep dive with Krister Shalm"). Zoom's own title is always something like "Virginia (Gina) Lorenz's Zoom Meeting", which says nothing. Delete `meeting.mp4`/`meeting.wav` once transcribed (step 8). Don't keep media here.
+Use the recording date, not today's. Name the meeting from its content and match the existing series (e.g. "Software stack meeting", "Attosecond layer deep dive with Krister Shalm"). Zoom's own title is always something like "Virginia (Gina) Lorenz's Zoom Meeting", which says nothing. Delete `meeting.mp4`/`share.mp4`/`meeting.wav` once transcribed (step 9). Don't keep media here.
 
 `transcript.md` header:
 
@@ -90,7 +92,7 @@ Add new recurring ones here. Regular attendees: Gina Lorenz, Marcos Frenkel, Mik
 
 **Before writing:** read the wiki's [Agents Must Read This First](https://wiki.quantum-aspen.net/doc/agents-must-read-this-first-Nr6Ca5XEu4) and [Formatting Help](https://wiki.quantum-aspen.net/doc/formatting-help-TGrn2qSbfr). The rules that bite: no H1 in the body (the title is its own field), callouts are `:::info` / `:::warning` blocks, diagrams use ```` ```mermaidjs ````, edit existing docs with `patch`.
 
-**Where:** the [Meetings](https://wiki.quantum-aspen.net/collection/meetings-ihBQ9Vrjrg) collection. Fetch the collection and follow its "Adding a summary" steps. Each summary is a child of its series page (e.g. *Software stack meeting*, which includes its deep dives and guest sessions, or *ASPEN-NET In-Person Retreat — Nov 5–6, 2026* for retreat planning), titled `YYYY-MM-DD <Meeting title>`, and gets a row in that series page's table. Create it from the **Meeting summary** template: run `list_templates` with the Meetings collection id, take its body, fill it in, and pass the result as `text` to `create_document` with `parentDocumentId` set to the series page. In the template, `!!…!!` marks a placeholder. Replace every one, and don't leave any `!!` markers in the published page. That template overrides the body sketch below wherever they differ. If no series fits, ask the user before starting a new one.
+**Where:** the [Meetings](https://wiki.quantum-aspen.net/collection/meetings-ihBQ9Vrjrg) collection. Fetch the collection and follow its "Adding a summary" steps. Each summary is a child of its series page (e.g. *Software stack meeting*, which includes its deep dives and guest sessions, or *ASPEN-NET In-Person Retreat — Nov 5–6, 2026* for retreat planning), titled `YYYY-MM-DD <Meeting title>`, and gets a row in that series page's table. Create it from the **Meeting summary** template: run `list_templates` with the Meetings collection id, take its body, fill it in, and pass the result as `text` to `create_document` with `parentDocumentId` set to the series page. In the template, `!!…!!` marks a placeholder. Replace every one, and don't leave any `!!` markers in the published page. That template overrides the body sketch below wherever they differ. If no series fits, ask the user before starting a new one. In unattended mode, fail the job instead.
 
 **Title:** `YYYY-MM-DD <Meeting title>`. **Body:** the template. Leave out its first `:::tip` (it's an instruction to the person filling the template in).
 
@@ -108,6 +110,10 @@ Otherwise don't attribute. Write "it was raised that…" or "one view was…", a
 - **Attendees and action-item owners:** @mention them (`@[Name](mention://user/<id>)`, with ids from `list_users`) on new summaries, so names link to profiles and owners get notified. Don't @mention on backfilled summaries of old meetings, because the notifications would just be noise. Use plain names there. People without wiki accounts get plain names.
 - **Notes by:** "AI from recording". The connector posts as the user, so this row and the warning callout are what tell readers an AI wrote it.
 
+**Chat:** add a `### Chat` section near the end listing the meeting's chat messages from `chat.json`, with time and sender. Sender names come from Zoom, so these are attributed. Leave out `ai:` commands that were carried out (they show up as screenshots or notes instead), and any messages inside an off-record span. Mention any command you couldn't interpret.
+
+**Screenshots:** upload each kept frame with `create_attachment` and place it inline at the topic it belongs to, captioned per `chat-commands.md`. Requested screenshots always go in. Scene frames go in only where they show something the summary discusses.
+
 Style: numbered `###` topics, short unattributed quotes in italics, explicit **Ask:** lines, and owners on action items. Link related wiki docs (e.g. the [Glossary](https://wiki.quantum-aspen.net/doc/glossary-LbZyBPLZu5)) where a topic touches them. Read earlier summaries in the series first so cross-references are real. Don't link to local transcript paths, because nobody else can open them.
 
-Publishing posts to a shared team space, so show the user the summary and the target location before the first `create_document` of a batch. After publishing, put the doc URL into `meta.json` and the `summary:` field of `transcript.md`.
+Publishing posts to a shared team space, so show the user the summary and the target location before the first `create_document` of a batch. In unattended mode (the transcription service), publish directly. After publishing, put the doc URL into `meta.json` and the `summary:` field of `transcript.md`.
