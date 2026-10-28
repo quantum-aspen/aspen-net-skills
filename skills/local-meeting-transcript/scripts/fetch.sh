@@ -6,6 +6,10 @@
 # in-meeting chat (chat.json, chat.md), and downloads the screen-share-only
 # stream (share.mp4) when the host recorded one.
 #
+# Passcode-protected Zoom recordings: set ZOOM_PASSCODE. zoom_play_info.py
+# unlocks the recording and saves the session cookies, which every yt-dlp call
+# then uses. The cookies are deleted at the end.
+#
 # Usage: fetch.sh <url> <workdir>
 set -e
 URL="${1:?usage: fetch.sh <url> <workdir>}"
@@ -16,24 +20,28 @@ cd "$D"
 
 echo "$URL" > url.txt
 
-echo "=== checking for existing captions/subs ==="
-timeout 90 yt-dlp --list-subs --no-warnings "$URL" || true
-echo "(if a real language track appears above — not just 'chapter' — prefer"
-echo " 'yt-dlp --write-subs --sub-langs <lang>' over transcribing from audio)"
-
-echo "=== pulling metadata (title, duration) ==="
-timeout 120 yt-dlp -J --no-warnings "$URL" > info.json
-jq '{title, duration, ext}' info.json
-
+# Zoom first: a passcode unlock has to happen before yt-dlp can see the recording.
 DATE_STAMP=""
+COOKIES=""
+trap 'rm -f zoom_cookies.txt' EXIT
 case "$URL" in
   *zoom.us/rec/*)
     echo "=== Zoom player info and chat ==="
     python3 "$S/zoom_play_info.py" "$URL" .
     python3 "$S/chat.py" play_info.json .
     DATE_STAMP=$(jq -r '.fileStartTime / 1000 | strftime("%Y-%m-%d %H:%M:%S GMT")' play_info.json)
+    [ -f zoom_cookies.txt ] && COOKIES="--cookies zoom_cookies.txt"
     ;;
 esac
+
+echo "=== checking for existing captions/subs ==="
+timeout 90 yt-dlp $COOKIES --list-subs --no-warnings "$URL" || true
+echo "(if a real language track appears above — not just 'chapter' — prefer"
+echo " 'yt-dlp --write-subs --sub-langs <lang>' over transcribing from audio)"
+
+echo "=== pulling metadata (title, duration) ==="
+timeout 120 yt-dlp $COOKIES -J --no-warnings "$URL" > info.json
+jq '{title, duration, ext}' info.json
 
 # yt-dlp's upload_date/timestamp are null for Zoom shares. The recording
 # start is also embedded in the CDN filename yt-dlp resolves, e.g.:
@@ -50,7 +58,7 @@ else
 fi
 
 echo "=== downloading recording ==="
-timeout 900 yt-dlp -o "meeting.mp4" --no-warnings --no-progress "$URL"
+timeout 900 yt-dlp $COOKIES -o "meeting.mp4" --no-warnings --no-progress "$URL"
 ls -la meeting.mp4
 
 # Frames for screenshots come from the screen-share-only stream if the host
@@ -59,7 +67,7 @@ ls -la meeting.mp4
 # camera) when it exists, else `view` (camera).
 if [ -f play_info.json ] && jq -e '.shareMp4Url' play_info.json >/dev/null; then
   echo "=== downloading screen-share-only stream ==="
-  timeout 900 yt-dlp -f share -o "share.mp4" --no-warnings --no-progress "$URL"
+  timeout 900 yt-dlp $COOKIES -f share -o "share.mp4" --no-warnings --no-progress "$URL"
 fi
 
 echo "=== extracting 16kHz mono WAV for Whisper ==="

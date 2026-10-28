@@ -50,6 +50,7 @@ When `MEETING_UNATTENDED=1` is set (the transcription service sets it), nobody i
 
 2. **Fetch + check for existing captions:** `<skill>/scripts/fetch.sh "<url>" <scratch>`
    For Zoom links it first saves Zoom's player info (`play_info.json`, via `zoom_play_info.py`) and the in-meeting chat (`chat.json`, `chat.md`, via `chat.py`), and takes the recording date from the player info's `fileStartTime` (for other links, from the resolved CDN filename, e.g. `GMT20260827-171318_Recording...`). Write it to `recording_datetime.txt` and use it for naming the output — yt-dlp's own date fields are null for Zoom.
+   If the recording has a passcode, run it with `ZOOM_PASSCODE=<passcode>` in the environment (never as an argument, and don't write it into any output). Without it, fetch stops with "this recording needs a passcode".
    Runs `yt-dlp --list-subs` — if a *real* language track exists (not just a `chapter` track, which is just screen-share on/off markers), grab that directly with `yt-dlp --write-subs` and skip straight to formatting; don't transcribe from audio. yt-dlp never surfaces Zoom's native speaker-labeled "Audio Transcript", so check `hasTranscript` in `play_info.json` too (see `references/zoom-native-transcript-check.md`).
    Downloads the video (`meeting.mp4`), the screen-share-only stream (`share.mp4`) if Zoom recorded one, and extracts a 16kHz mono WAV (what faster-whisper wants).
 
