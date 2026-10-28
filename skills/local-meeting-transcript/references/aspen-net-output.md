@@ -44,7 +44,7 @@ date: YYYY-MM-DD
 title: <Meeting title>
 source: Zoom cloud recording — illinois.zoom.us
 transcription: faster-whisper large-v3-turbo (int8), run locally; no speaker labels
-attendees: [<names inferred from content>]
+attendees: [<names inferred from content, spelled as on the wiki roster>]
 summary: <wiki URL, filled in after publishing>
 ---
 
@@ -71,7 +71,7 @@ Build it for each meeting by scanning the transcript. Substitutions seen so far:
 | "time tiger", "time tigers", "time takers" | **Time Tagger** (Swabian) |
 | "Aspenet", "AspenNet", "Aspen.net", "us Bennett" | **ASPEN-NET** |
 | "PQM", "PQ and" | **PQN** |
-| "christer", "Chris or" | **Krister** (Shalm) |
+| "christer", "Chris or" | **Krister** |
 | "CMQ" | **ZeroMQ / ZMQ** |
 | "NetCasm" | **NetQASM** |
 | "pgas", "fbga" | **FPGA(s)** |
@@ -83,10 +83,22 @@ Build it for each meeting by scanning the transcript. Substitutions seen so far:
 | "ghc", "gsg", "GG states" | **GHZ** states |
 | "placal cells", "POCLE cells" | **Pockels cells** |
 | "add-a-second", "add to second", "auto second" | **attosecond** (layer) |
-| "stephan" | **Stefan** (Krastanov) |
+| "stephan" | **Stefan** |
 | "gino" | **Gina** |
 
-Add new recurring ones here. Regular attendees: Gina Lorenz, Marcos Frenkel, Mike Mazurek, Krister Shalm, Jasper.
+Add new recurring ones here, first names only. Who's who comes from the wiki (below).
+
+### Names come from the wiki
+
+The team roster is the wiki's user list, so this skill doesn't keep one. Use `team.json` in the
+working directory if it's there (the transcription service writes it: `[{name, id}]`).
+Otherwise, use the Outline MCP's `list_users`. Use the roster to:
+- resolve misheard names to a real person, e.g. "christer" → Krister → Krister Shalm;
+- spell full names, and get the user ids for @mentions.
+
+If someone is named in the meeting but isn't on the roster, keep the name as heard and
+don't invent a surname. Being on the roster doesn't mean someone attended, and the
+attendees list still follows the evidence rules below.
 
 ## 3. Wiki summary
 
