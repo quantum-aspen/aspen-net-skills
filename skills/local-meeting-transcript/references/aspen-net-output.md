@@ -124,6 +124,8 @@ Otherwise don't attribute. Write "it was raised that…" or "one view was…", a
 
 A wrong owner is worse than TBD: people act on it, or assume someone else has it.
 
+**Due dates** work the same way: give one only if it was said in the meeting ("by Friday", "next week"). Otherwise it's TBD. Don't derive one from other wiki pages, such as an upcoming retreat.
+
 **Metadata:**
 
 - **Header → Recording:** the Zoom share link the user gave you.
