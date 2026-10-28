@@ -117,6 +117,13 @@ someone attended, and the attendees list still follows the evidence rules below.
 
 Otherwise don't attribute. Write "it was raised that…" or "one view was…", and leave quotes unattributed. Don't write per-person "positions" sections. If two views conflicted, present both without names. When unsure, leave the name out.
 
+**Action-item owners** follow the same rule, and it's where summaries most often go wrong. Give an owner only when the exchange itself names them taking the task: "Marcos, can you…" and they agree, or they say they'll do it and are named in that exchange. Otherwise the owner is **TBD**. Don't infer an owner from:
+- who posted something related in chat;
+- whose system or document it concerns;
+- who seemed to be speaking.
+
+A wrong owner is worse than TBD: people act on it, or assume someone else has it.
+
 **Metadata:**
 
 - **Header → Recording:** the Zoom share link the user gave you.
