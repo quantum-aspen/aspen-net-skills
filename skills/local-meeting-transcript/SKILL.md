@@ -55,7 +55,7 @@ When `MEETING_UNATTENDED=1` is set (the transcription service sets it), nobody i
 
 3. **Transcribe (background, ~7-10 min for a 70min meeting):**
    `<venv>/bin/python <skill>/scripts/transcribe.py <scratch>/meeting.wav large-v3-turbo <scratch>/transcript`
-   Use `large-v3-turbo` int8 on CPU — best accuracy/speed tradeoff without a GPU. Run as a background process (Bash `run_in_background: true`); wait for the completion notification rather than blocking foreground calls, since foreground timeout is capped well under typical run length. Several meetings can be fetched in parallel, but transcribe them one at a time — each whisper run takes 4 threads and a few GB of memory.
+   Use `large-v3-turbo` int8 on CPU — best accuracy/speed tradeoff without a GPU. To use a remote whisper server instead (OpenAI-compatible, returning `verbose_json` segment timestamps), set `TRANSCRIBE_URL` and `TRANSCRIBE_MODEL` (plus `TRANSCRIBE_API_KEY` if needed). The outputs are identical; see the script's docstring. Never point it at a server the user hasn't chosen: it uploads the meeting audio. Run as a background process (Bash `run_in_background: true`); wait for the completion notification rather than blocking foreground calls, since foreground timeout is capped well under typical run length. Several meetings can be fetched in parallel, but transcribe them one at a time — each whisper run takes 4 threads and a few GB of memory.
 
 4. **Ship the default deliverable — plain transcript, no speaker labels:**
    `python3 <skill>/scripts/clean_transcript.py <scratch>/transcript.srt <out>/transcript.md`
