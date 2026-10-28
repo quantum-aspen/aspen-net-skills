@@ -136,6 +136,14 @@ A wrong owner is worse than TBD: people act on it, or assume someone else has it
 
 **Screenshots:** upload each kept frame and place it inline at the topic it belongs to, captioned per `chat-commands.md`. Requested screenshots always go in. Scene frames go in only where they show something the summary discusses. Uploading is two steps: `create_attachment` (name, `image/png`, size in bytes) returns an `uploadUrl`, its form fields and the attachment URL. Then POST the file there, e.g. `curl -sf -X POST "$uploadUrl" -F key=value … -F file=@frame.png` with every returned field before `file`. Embed the attachment URL as `![caption](url)`.
 
+**Give loose talk some structure.** Meetings are conversational: ideas come out half-formed, out of order, and spread over several turns. Part of the summary's job is to give them shape, so be proactive about adding a visual or structured aid wherever one makes a topic easier to grasp than prose. Good candidates:
+
+- a mermaid diagram (```` ```mermaidjs ````) when people describe a system, a split between services, a data or request flow, a sequence of steps, or a dependency chain. A flowchart or sequence diagram of "who calls what" is usually the most useful;
+- a table when options were weighed against each other (option → pros, cons, open questions), or when several items share the same attributes;
+- a short numbered list when a process or a worked example was talked through step by step.
+
+Draw only what was said. Every box, arrow and label should trace back to the discussion. Where you had to fill a gap to make the picture hang together, mark it (a dashed edge, or a `?` in the label) and say so in a line underneath. Caption each diagram with one line saying it was drawn from the discussion and isn't an agreed design, so nobody mistakes the agent's sketch for a decision. Keep diagrams small: a dozen nodes or so; split a bigger picture into two. Put each one inside the topic it belongs to, next to the prose it supports, not in a separate section. One or two good aids per meeting is typical; don't add one where a sentence does the job.
+
 Style: numbered `###` topics, short unattributed quotes in italics, explicit **Ask:** lines, and owners on action items. Link related wiki docs (e.g. the [Glossary](https://wiki.quantum-aspen.net/doc/glossary-LbZyBPLZu5)) where a topic touches them. Read earlier summaries in the series first so cross-references are real. Don't link to local transcript paths, because nobody else can open them.
 
 Publishing posts to a shared team space, so show the user the summary and the target location before the first `create_document` of a batch. In unattended mode (the transcription service), publish directly. After publishing, put the doc URL into `meta.json` and the `summary:` field of `transcript.md`.
