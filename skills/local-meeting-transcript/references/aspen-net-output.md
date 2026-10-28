@@ -90,15 +90,16 @@ Add new recurring ones here, first names only. Who's who comes from the wiki (be
 
 ### Names come from the wiki
 
-The team roster is the wiki's user list, so this skill doesn't keep one. Use `team.json` in the
-working directory if it's there (the transcription service writes it: `[{name, id}]`).
-Otherwise, use the Outline MCP's `list_users`. Use the roster to:
+The team roster is the wiki's user list, so this skill doesn't keep one. Always check it
+before writing names: use `team.json` in the working directory if it's there (the
+transcription service writes it: `[{name, id}]`), otherwise the Outline MCP's `list_users`.
+Use it to:
 - resolve misheard names to a real person, e.g. "christer" → Krister → Krister Shalm;
 - spell full names, and get the user ids for @mentions.
 
-If someone is named in the meeting but isn't on the roster, keep the name as heard and
-don't invent a surname. Being on the roster doesn't mean someone attended, and the
-attendees list still follows the evidence rules below.
+Names that aren't on the roster are fine: guests, collaborators, people talked about.
+Transcribe them as your best guess at what was said. Being on the roster doesn't mean
+someone attended, and the attendees list still follows the evidence rules below.
 
 ## 3. Wiki summary
 
